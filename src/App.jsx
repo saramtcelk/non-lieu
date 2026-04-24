@@ -191,7 +191,7 @@ Réponds UNIQUEMENT en JSON valide, sans markdown ni explication :
 }`;
 
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("/api/claude", {
         method: "POST",
         headers: { "headers: { "Content-Type": "application/json", "x-api-key": process.env.REACT_APP_ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },": "application/json" },
         body: JSON.stringify({
