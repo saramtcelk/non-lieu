@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Non Lieu — Jeu d'Enquête</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d0b08;
+    font-family: 'Palatino Linotype', Palatino, serif;
+    color: #c8b89a;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    background: rgba(15,12,8,0.97);
+    border: 1px solid rgba(180,140,80,0.15);
+    border-top: 3px solid #b48c50;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 0 80px rgba(180,140,80,0.05), 0 30px 80px rgba(0,0,0,0.8);
+  }
+  .header { padding: 24px 28px 18px; border-bottom: 1px solid rgba(180,140,80,0.1); }
+  .body { padding: 22px 28px; }
+  .badge {
+    display: inline-block;
+    font-size: 0.58rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: #b48c50;
+    border: 1px solid rgba(180,140,80,0.3);
+    padding: 3px 10px;
+    margin-bottom: 8px;
+  }
+  h1 { font-size: 1.9rem; font-weight: normal; color: #e8d8b8; letter-spacing: 0.05em; }
+  .sub { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: #5a4a30; margin-top: 4px; }
+  .label { font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase; color: #5a4a30; margin-bottom: 10px; display: block; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+  .theme-btn {
+    padding: 10px 12px;
+    background: transparent;
+    border: 1px solid rgba(180,140,80,0.15);
+    color: #5a4a30;
+    cursor: pointer;
+    font-size: 0.78rem;
+    text-align: left;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .theme-btn.active { background: rgba(180,140,80,0.12); border-color: #b48c50; color: #b48c50; }
+  .theme-btn.premium { opacity: 0.4; cursor: not-allowed; }
+  .diff-row { display: flex; gap: 8px; margin-bottom: 22px; }
+  .diff-btn {
+    flex: 1; padding: 11px 10px;
+    background: transparent;
+    border: 1px solid rgba(180,140,80,0.15);
+    color: #5a4a30;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .diff-btn.active { background: rgba(180,140,80,0.12); border-color: #b48c50; color: #b48c50; }
+  .primary-btn {
+    width: 100%; padding: 15px;
+    background: rgba(180,140,80,0.1);
+    border: 1px solid rgba(180,140,80,0.4);
+    color: #b48c50;
+    cursor: pointer;
+    font-size: 0.68rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    font-family: inherit;
+    transition: all 0.3s;
+  }
+  .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .info-box {
+    background: rgba(180,140,80,0.04);
+    border: 1px solid rgba(180,140,80,0.1);
+    padding: 14px 16px;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: #8a7a60;
+    margin-bottom: 12px;
+  }
+  .premium-tag {
+    font-size: 0.55rem; letter-spacing: 0.2em;
+    background: rgba(180,140,80,0.15);
+    border: 1px solid rgba(180,140,80,0.3);
+    color: #b48c50; padding: 2px 6px;
+    text-transform: uppercase;
+  }
+  .error { color: #c05040; font-size: 0.78rem; margin-bottom: 12px; }
+
+  /* Game screen */
+  .game-card {
+    background: rgba(15,12,8,0.97);
+    border: 1px solid rgba(180,140,80,0.15);
+    border-top: 3px solid #b48c50;
+    max-width: 680px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    max-height: 700px;
+    box-shadow: 0 0 80px rgba(180,140,80,0.05), 0 30px 80px rgba(0,0,0,0.8);
+  }
+  .game-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(180,140,80,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .suspects-bar {
+    padding: 10px 24px;
+    border-bottom: 1px solid rgba(180,140,80,0.07);
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+  .suspect-tag {
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border: 1px solid rgba(180,140,80,0.2);
+    color: #8a7a60;
+  }
+  .indices-bar {
+    padding: 10px 24px;
+    border-bottom: 1px solid rgba(180,140,80,0.07);
+    flex-shrink: 0;
+  }
+  .indice-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    background: rgba(180,140,80,0.05);
+    border: 1px solid rgba(180,140,80,0.15);
+    color: #b48c50;
+    margin: 2px;
+  }
+  .chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .msg-intro { background: rgba(180,140,80,0.04); border: 1px solid rgba(180,140,80,0.1); padding: 14px 16px; font-size: 0.85rem; line-height: 1.7; color: #8a7a60; font-style: italic; }
+  .msg-user { align-self: flex-end; max-width: 80%; background: rgba(180,140,80,0.08); border: 1px solid rgba(180,140,80,0.2); padding: 10px 14px; font-size: 0.85rem; color: #d4aa70; }
+  .msg-answer { align-self: flex-start; max-width: 88%; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; font-size: 0.83rem; color: #8a7a60; line-height: 1.65; }
+  .msg-label { font-size: 0.55rem; letter-spacing: 0.2em; color: #5a4a30; margin-bottom: 4px; }
+  .input-area {
+    padding: 14px 24px;
+    border-top: 1px solid rgba(180,140,80,0.1);
+    flex-shrink: 0;
+  }
+  .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .text-input {
+    flex: 1; padding: 11px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(180,140,80,0.2);
+    color: #c8b89a;
+    font-size: 0.83rem;
+    outline: none;
+    font-family: inherit;
+  }
+  .send-btn {
+    padding: 11px 18px;
+    background: transparent;
+    border: 1px solid rgba(180,140,80,0.15);
+    color: #5a4a30;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .accuse-row { display: flex; gap: 8px; }
+  .accuse-input {
+    flex: 1; padding: 10px 14px;
+    background: rgba(180,40,40,0.05);
+    border: 1px solid rgba(180,40,40,0.2);
+    color: #c88070;
+    font-size: 0.8rem;
+    outline: none;
+    font-family: inherit;
+  }
+  .accuse-btn {
+    padding: 10px 16px;
+    background: rgba(180,40,40,0.1);
+    border: 1px solid rgba(180,40,40,0.3);
+    color: #c05040;
+    cursor: pointer;
+    font-size: 0.68rem;
+    font-family: inherit;
+  }
+  .loading { text-align: center; padding: 40px; }
+  .dots { display: flex; justify-content: center; gap: 10px; margin-top: 16px; }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #b48c50;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,100%{opacity:.15;transform:scale(.7)} 50%{opacity:1;transform:scale(1)} }
+
+  /* Result */
+  .result-icon { font-size: 2.8rem; text-align: center; margin: 10px 0 6px; }
+  .result-title { font-size: 1.5rem; text-align: center; font-weight: normal; color: #e8d8b8; }
+  .result-sub { text-align: center; font-size: 0.82rem; color: #5a4a30; margin-top: 6px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const FREE_THEMES = [
+  { id: "manoir", label: "🏚️ Meurtre dans un manoir", prompt: "meurtre dans un manoir victorien isolé" },
+  { id: "musee", label: "🖼️ Vol au musée", prompt: "vol mystérieux dans un grand musée parisien" },
+  { id: "village", label: "🏘️ Disparition en village", prompt: "disparition inexpliquée dans un petit village de province français" },
+  { id: "yacht", label: "⛵ Crime sur un yacht", prompt: "meurtre sur un yacht de luxe en Méditerranée" },
+  { id: "diner", label: "🍷 Empoisonnement mondain", prompt: "empoisonnement lors d'un dîner mondain dans un hôtel particulier parisien" },
+];
+
+const PREMIUM_THEMES = [
+  { id: "enfant", label: "👦 Enfant disparu", prompt: "disparition inexpliquée d'un enfant dans un hameau isolé" },
+  { id: "famille", label: "👨‍👩‍👧 Famille volatilisée", prompt: "une famille entière disparaît du jour au lendemain" },
+  { id: "notable", label: "🎩 Le notable intouchable", prompt: "un homme influent soupçonné d'un meurtre" },
+  { id: "jeune", label: "🌹 Jeune femme retrouvée", prompt: "une jeune femme retrouvée morte dans des circonstances mystérieuses" },
+  { id: "innocent", label: "⚖️ L'innocent accusé", prompt: "un homme accusé à tort d'un meurtre en province" },
+  { id: "casino", label: "🎰 Nuit au casino", prompt: "meurtre dans un casino de luxe à Monaco" },
+  { id: "train", label: "🚂 Meurtre dans le train", prompt: "meurtre dans un train de nuit Paris-Nice" },
+  { id: "chateau", label: "🏰 Château de la Loire", prompt: "mort suspecte lors d'une réception dans un château" },
+  { id: "cannes", label: "🎬 Scandale à Cannes", prompt: "disparition mystérieuse pendant le Festival de Cannes" },
+  { id: "couvent", label: "⛪ Secret au couvent", prompt: "mort inexpliquée dans un couvent isolé" },
+  { id: "mine", label: "⛏️ Mystère à la mine", prompt: "disparition dans une mine abandonnée du nord de la France" },
+  { id: "versailles", label: "👑 Versailles 1700s", prompt: "complot et meurtre à la cour de Versailles" },
+  { id: "guerre", label: "🪖 Espion en guerre", prompt: "agent double assassiné pendant la Seconde Guerre Mondiale" },
+  { id: "startup", label: "💻 Trahison en startup", prompt: "mort suspecte du fondateur d'une startup parisienne" },
+  { id: "provence", label: "🌻 Ferme en Provence", prompt: "triple meurtre dans une ferme isolée de Provence" },
+];
+
+const DIFFICULTY = {
+  facile: { label: "🔎 Inspecteur", questions: 12 },
+  moyen: { label: "🕵️ Commissaire", questions: 8 },
+  difficile: { label: "💀 Maître", questions: 5 },
+};
+
+let state = {
+  screen: "home",
+  selectedTheme: null,
+  difficulty: "moyen",
+  isPremium: false,
+  dailyCount: 0,
+  caseData: null,
+  qLeft: 8,
+  notebook: [],
+  accusation: "",
+  error: null,
+  input: "",
+};
+
+function render() {
+  const app = document.getElementById("app");
+  if (state.screen === "loading") {
+    app.innerHTML = `
+      <div class="card">
+        <div class="header">
+          <div class="badge">Dossier confidentiel</div>
+          <h1>Ouverture de l'enquête</h1>
+        </div>
+        <div class="loading">
+          <span class="label">Collecte des indices en cours</span>
+          <div class="dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (state.screen === "game" && state.caseData) {
+    const msgs = state.notebook.map(e => {
+      if (e.type === "intro") return `<div class="msg-intro">${e.text}</div>`;
+      if (e.type === "question") return `<div class="msg-user"><div class="msg-label">DÉTECTIVE</div>${e.text}</div>`;
+      return `<div class="msg-answer"><div class="msg-label">TÉMOIN</div>${e.text}</div>`;
+    }).join("");
+
+    const suspects = state.caseData.suspects.map(s =>
+      `<div class="suspect-tag" title="${s.role}">${s.nom}</div>`
+    ).join("");
+
+    const indices = state.caseData.indices.map(i =>
+      `<span class="indice-tag">📍 ${i}</span>`
+    ).join("");
+
+    app.innerHTML = `
+      <div class="game-card">
+        <div class="game-header">
+          <div>
+            <div style="font-size:0.55rem;letter-spacing:0.3em;color:#5a4a30;text-transform:uppercase;margin-bottom:2px">Non Lieu</div>
+            <div style="font-size:1rem;color:#d4aa70">🔍 ${state.caseData.titre}</div>
+          </div>
+          <div style="font-size:0.6rem;letter-spacing:0.2em;color:${state.qLeft<=2?'#c05040':'#5a4a30'};text-transform:uppercase">
+            ${state.qLeft} question${state.qLeft>1?'s':''} restante${state.qLeft>1?'s':''}
+          </div>
+        </div>
+        <div class="suspects-bar">
+          <span class="label" style="margin-bottom:0;align-self:center;margin-right:4px">Suspects :</span>
+          ${suspects}
+        </div>
+        <div class="indices-bar">
+          <span class="label">Indices visibles</span>
+          ${indices}
+        </div>
+        <div class="chat" id="chat">${msgs}</div>
+        <div class="input-area">
+          ${state.qLeft > 0 ? `
+          <div class="input-row">
+            <input class="text-input" id="questionInput" placeholder="Interrogez un suspect, examinez un indice..." value="${state.input}">
+            <button class="send-btn" onclick="sendQuestion()">→</button>
+          </div>` : `<div style="font-size:0.72rem;color:#c05040;margin-bottom:10px">⏱ Plus de questions — accusez !</div>`}
+          <div class="accuse-row">
+            <input class="accuse-input" id="accuseInput" placeholder="Nom du coupable...">
+            <button class="accuse-btn" onclick="accuse()">Accuser ⚖️</button>
+          </div>
+        </div>
+      </div>`;
+
+    const chat = document.getElementById("chat");
+    if (chat) chat.scrollTop = chat.scrollHeight;
+
+    const qi = document.getElementById("questionInput");
+    if (qi) qi.addEventListener("keydown", e => { if (e.key === "Enter") sendQuestion(); });
+    const ai = document.getElementById("accuseInput");
+    if (ai) ai.addEventListener("keydown", e => { if (e.key === "Enter") accuse(); });
+    return;
+  }
+
+  if (state.screen === "result" && state.caseData) {
+    const correct = state.result?.correct;
+    app.innerHTML = `
+      <div class="card">
+        <div class="header">
+          <div class="badge">${correct ? "Affaire résolue" : "Affaire classée"}</div>
+          <div class="result-icon">${correct ? "🏆" : "💀"}</div>
+          <div class="result-title">${correct ? "Brillant, Détective !" : "Le coupable s'est échappé..."}</div>
+          <div class="result-sub">${correct ? `${state.caseData.coupable} est bien le coupable.` : `Vous avez accusé ${state.result.accused}. Le vrai coupable était ${state.caseData.coupable}.`}</div>
+        </div>
+        <div class="body">
+          <span class="label">Solution complète</span>
+          <div class="info-box" style="margin-bottom:8px"><strong style="color:#d4aa70">Mobile :</strong> ${state.caseData.mobile}</div>
+          <div class="info-box" style="margin-bottom:20px">${state.caseData.solution}</div>
+          <button class="primary-btn" onclick="goHome()">Nouvelle enquête →</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // HOME
+  const freeThemes = FREE_THEMES.map(t => `
+    <button class="theme-btn ${state.selectedTheme === t.id ? 'active' : ''}" onclick="selectTheme('${t.id}')">${t.label}</button>
+  `).join("");
+
+  const premiumThemes = PREMIUM_THEMES.map(t => `
+    <button class="theme-btn ${state.isPremium ? (state.selectedTheme === t.id ? 'active' : '') : 'premium'}"
+      onclick="${state.isPremium ? `selectTheme('${t.id}')` : ''}">${t.label}</button>
+  `).join("");
+
+  const diffBtns = Object.entries(DIFFICULTY).map(([k, v]) => `
+    <button class="diff-btn ${state.difficulty === k ? 'active' : ''}" onclick="setDiff('${k}')">
+      <div>${v.label}</div>
+      <div style="font-size:0.6rem;opacity:0.6;margin-top:2px">${v.questions} questions</div>
+    </button>
+  `).join("");
+
+  const canPlay = state.isPremium || state.dailyCount < 3;
+
+  app.innerHTML = `
+    <div class="card">
+      <div class="header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="badge">Non Lieu — Jeu d'enquête IA</div>
+            <h1>Non Lieu</h1>
+            <div class="sub">Chaque affaire générée par l'IA — unique</div>
+          </div>
+          <button class="diff-btn ${state.isPremium ? 'active' : ''}" style="white-space:nowrap;padding:8px 14px;font-size:0.65rem" onclick="togglePremium()">
+            ${state.isPremium ? "✦ PREMIUM" : "Passer Premium"}
+          </button>
+        </div>
+        ${!state.isPremium ? `<div style="margin-top:10px;font-size:0.7rem;color:#5a4a30">${3 - state.dailyCount} enquête${3-state.dailyCount>1?'s':''} gratuite${3-state.dailyCount>1?'s':''} restante${3-state.dailyCount>1?'s':''} aujourd'hui</div>` : ''}
+      </div>
+      <div class="body">
+        <span class="label">Votre grade</span>
+        <div class="diff-row">${diffBtns}</div>
+
+        <span class="label">Thèmes disponibles</span>
+        <div class="grid">${freeThemes}</div>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span class="label" style="margin-bottom:0">Thèmes Premium</span>
+          ${!state.isPremium ? '<span class="premium-tag">🔒 Premium</span>' : ''}
+        </div>
+        <div class="grid">${premiumThemes}</div>
+
+        ${state.error ? `<div class="error">${state.error}</div>` : ''}
+
+        <button class="primary-btn" ${!canPlay || !state.selectedTheme ? 'disabled' : ''} onclick="startGame()">
+          ${!state.selectedTheme ? "Choisir un thème →" : !canPlay ? "Limite atteinte — Passez Premium →" : "Ouvrir le dossier →"}
+        </button>
+
+        ${!state.isPremium ? `<div class="info-box" style="margin-top:12px;font-size:0.72rem;text-align:center">✦ Premium — 2,99€/mois · Enquêtes illimitées · 20 thèmes · Historique · Bientôt : mode co-op</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function selectTheme(id) { state.selectedTheme = id; state.error = null; render(); }
+function setDiff(d) { state.difficulty = d; render(); }
+function togglePremium() { state.isPremium = !state.isPremium; render(); }
+function goHome() { state.screen = "home"; state.caseData = null; render(); }
+
+async function startGame() {
+  if (!state.selectedTheme) return;
+  if (!state.isPremium && state.dailyCount >= 3) { state.error = "Limite atteinte. Passez Premium !"; render(); return; }
+
+  const allThemes = [...FREE_THEMES, ...PREMIUM_THEMES];
+  const theme = allThemes.find(t => t.id === state.selectedTheme);
+  const maxQ = DIFFICULTY[state.difficulty].questions;
+
+  state.screen = "loading";
+  state.error = null;
+  render();
+
+  const prompt = `Tu es le créateur d'un jeu d'enquête policière français. Génère une affaire complète sur : "${theme.prompt}".
+
+Réponds UNIQUEMENT en JSON valide, sans markdown :
+{
+  "titre": "Titre accrocheur style roman noir",
+  "introduction": "Scène d'ouverture immersive en 4 phrases",
+  "suspects": [
+    {"nom": "Prénom Nom", "role": "son rôle", "description": "en 1 phrase", "secret": "ce qu'il cache"},
+    {"nom": "Prénom Nom", "role": "son rôle", "description": "en 1 phrase", "secret": "ce qu'il cache"},
+    {"nom": "Prénom Nom", "role": "son rôle", "description": "en 1 phrase", "secret": "ce qu'il cache"},
+    {"nom": "Prénom Nom", "role": "son rôle", "description": "en 1 phrase", "secret": "ce qu'il cache"}
+  ],
+  "coupable": "Prénom Nom exact",
+  "mobile": "Le mobile en 1 phrase",
+  "indices": ["indice 1", "indice 2", "indice 3", "indice 4"],
+  "qa": [
+    {"q": "question probable", "r": "réponse en 2-3 phrases"},
+    {"q": "question probable", "r": "réponse"},
+    {"q": "question probable", "r": "réponse"},
+    {"q": "question probable", "r": "réponse"},
+    {"q": "question probable", "r": "réponse"},
+    {"q": "question probable", "r": "réponse"},
+    {"q": "question probable", "r": "réponse"},
+    {"q": "question probable", "r": "réponse"}
+  ],
+  "solution": "Explication complète en 4-5 phrases"
+}`;
+
+  try {
+    const res = await fetch("https://non-lieu.vercel.app/api/claude", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: [{ role: "user", content: prompt }] })
+    });
+
+    const data = await res.json();
+    const text = (data.content?.[0]?.text || "").replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(text);
+
+    state.caseData = parsed;
+    state.qLeft = maxQ;
+    state.notebook = [{ type: "intro", text: parsed.introduction }];
+    state.accusation = "";
+    state.input = "";
+    state.dailyCount++;
+    state.screen = "game";
+    render();
+  } catch (e) {
+    state.error = "Erreur de génération. Réessaie !";
+    state.screen = "home";
+    render();
+  }
+}
+
+function sendQuestion() {
+  const input = document.getElementById("questionInput");
+  const q = input ? input.value.trim() : state.input;
+  if (!q || state.qLeft <= 0) return;
+
+  state.qLeft--;
+  state.notebook.push({ type: "question", text: q });
+
+  const match = state.caseData.qa.find(item =>
+    item.q.toLowerCase().split(" ").some(word =>
+      word.length > 4 && q.toLowerCase().includes(word)
+    )
+  );
+
+  const answer = match ? match.r : "Les témoins restent évasifs... Essayez d'interroger directement un suspect ou d'examiner les indices.";
+  state.notebook.push({ type: "answer", text: answer });
+  state.input = "";
+  render();
+}
+
+function accuse() {
+  const input = document.getElementById("accuseInput");
+  const accusation = input ? input.value.trim() : "";
+  if (!accusation) return;
+
+  const found = state.caseData.suspects.find(s =>
+    s.nom.toLowerCase().includes(accusation.toLowerCase()) ||
+    accusation.toLowerCase().includes(s.nom.toLowerCase().split(" ")[0].toLowerCase())
+  );
+
+  const correct = found && found.nom === state.caseData.coupable;
+  state.result = { correct, accused: accusation };
+  state.screen = "result";
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
