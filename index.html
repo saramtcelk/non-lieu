@@ -473,7 +473,7 @@ Réponds UNIQUEMENT en JSON valide, sans markdown :
   try {
     const res = await fetch("https://non-lieu.vercel.app/api/claude", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ messages: [{ role: "user", content: prompt }] })
     });
 
