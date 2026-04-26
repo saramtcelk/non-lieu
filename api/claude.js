@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     
     const data = await groqResponse.json();
     console.log('Groq response:', JSON.stringify(data));
-    const content = data.choices?.[0]?.message?.content || "";
+    console.log('Full Groq data:', JSON.stringify(data)); const content = data.choices?.[0]?.message?.content || JSON.stringify(data);
     res.status(200).json({ content: [{ text: content }] });
   } catch (error) {
     console.error('Error:', error.message);
