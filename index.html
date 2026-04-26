@@ -442,7 +442,7 @@ async function startGame() {
   state.error = null;
   render();
 
-  const prompt = `Tu es le créateur d'un jeu d'enquête policière français. Génère une affaire complète sur : "${theme.prompt}".
+  const prompt = `Génère une enquête policière JSON sur : "${theme.prompt}". Réponds UNIQUEMENT en JSON : {"titre":"...","introduction":"4 phrases","suspects":[{"nom":"Prénom Nom","role":"...","description":"...","secret":"..."},{"nom":"Prénom Nom","role":"...","description":"...","secret":"..."},{"nom":"Prénom Nom","role":"...","description":"...","secret":"..."},{"nom":"Prénom Nom","role":"...","description":"...","secret":"..."}],"coupable":"Prénom Nom","mobile":"...","indices":["...","...","...","..."],"qa":[{"q":"...","r":"..."},{"q":"...","r":"..."},{"q":"...","r":"..."},{"q":"...","r":"..."},{"q":"...","r":"..."},{"q":"...","r":"..."}],"solution":"4 phrases"}`; d'un jeu d'enquête policière français. Génère une affaire complète sur : "${theme.prompt}".
 
 Réponds UNIQUEMENT en JSON valide, sans markdown :
 {
