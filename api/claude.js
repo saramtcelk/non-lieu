@@ -2,7 +2,6 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', '*');
-  res.setHeader('Access-Control-Max-Age', '86400');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -10,9 +9,12 @@ export default async function handler(req, res) {
 
   try {
     let body = req.body;
-    if (typeof body === 'string') body = JSON.parse(body);
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch(e) {}
+    }
     
-    const userMessage = body?.messages?.[body?.messages?.length-1]?.content || "Génère une enquête policière française";
+    const messages = body?.messages || [];
+    const lastMessage = messages[messages.length - 1]?.content || "Génère une enquête policière";
     
     const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -22,7 +24,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
-        messages: [{ role: "user", content: userMessage }],
+        messages: [{ role: "user", content: lastMessage }],
         max_tokens: 2000
       })
     });
