@@ -191,7 +191,7 @@ Réponds UNIQUEMENT en JSON valide, sans markdown ni explication :
 }`;
 
     try {
-      const res = await fetch("https://https://non-lieu.versel.app/api/claude", {
+      const res = await fetch("https://non-lieu.versel.app/api/claude", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
