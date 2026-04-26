@@ -1,7 +1,8 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Max-Age', '86400');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -9,11 +10,11 @@ export default async function handler(req, res) {
 
   try {
     let body = req.body;
-    if (typeof body === 'string') {
-      body = JSON.parse(body);
-    }
+    if (typeof body === 'string') body = JSON.parse(body);
     
-    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const userMessage = body?.messages?.[body?.messages?.length-1]?.content || "Génère une enquête policière française";
+    
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -21,17 +22,15 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
-        messages: body.messages,
+        messages: [{ role: "user", content: userMessage }],
         max_tokens: 2000
       })
     });
     
-    const data = await groqResponse.json();
-    console.log('Groq response:', JSON.stringify(data));
-    console.log('Full Groq data:', JSON.stringify(data)); const content = data.choices?.[0]?.message?.content || JSON.stringify(data);
+    const data = await groqRes.json();
+    const content = data.choices?.[0]?.message?.content || "";
     res.status(200).json({ content: [{ text: content }] });
-  } catch (error) {
-    console.error('Error:', error.message);
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 }
